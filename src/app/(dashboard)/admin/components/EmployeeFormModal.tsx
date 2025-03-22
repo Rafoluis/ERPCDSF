@@ -5,23 +5,33 @@ import Modal from '@/components/forms/modal/Modal'
 import { showToast } from '@/lib/toast'
 import { Employee, EmployeeSchema } from '@/schemas/employee.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect } from 'react'
 import { useForm, Controller, Control } from 'react-hook-form'
 
 interface Props {
   isOpen: boolean
   employee?: Employee | null
   onClose: () => void
+  showRole?: boolean
 }
 
-const EmployeeFormModal = ({ isOpen, employee, onClose }: Props) => {
+const EmployeeFormModal = ({ isOpen, employee, onClose, showRole = true }: Props) => {
   const isEditMode = !!employee
-  const title = isEditMode ? 'Editar usuario' : 'Agregar nuevo usuario'
+  const title = showRole 
+    ? isEditMode 
+        ? 'Editar empleado' 
+        : 'Agregar nuevo empleado' 
+    : isEditMode 
+        ? 'Editar doctor' 
+        : 'Agregar nuevo doctor';
 
   const {
     register,
     handleSubmit,
     control,
     formState: { errors },
+    setValue,
+    watch
   } = useForm<Employee>({
     resolver: zodResolver(EmployeeSchema),
     defaultValues: {
@@ -34,9 +44,16 @@ const EmployeeFormModal = ({ isOpen, employee, onClose }: Props) => {
       telefono: employee?.telefono ?? '',
       direccion: employee?.direccion ?? '',
       especialidad: employee?.especialidad ?? '',
-      roles: employee?.roles ?? []
+      roles: !showRole ? ['ODONTOLOGO'] : employee?.roles ?? [],
     },
   })
+
+  const roles = watch('roles')
+
+  useEffect(() => {
+    if (!showRole && roles.length === 0) setValue('roles', ['ODONTOLOGO'])
+  }, [showRole, setValue])
+
 
   const onSubmit = async (data: Employee) => {
     const response = await createOrUpdateEmployee(data)
@@ -78,7 +95,7 @@ const EmployeeFormModal = ({ isOpen, employee, onClose }: Props) => {
 
         <InputField label="Especialidad" id="especialidad" register={register} error={errors.especialidad} />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className={`grid gap-4 ${!showRole ? 'grid-cols-1' : 'grid-cols-2'}`}>
           <SelectField
             label="Sexo"
             id="sexo"
@@ -90,17 +107,21 @@ const EmployeeFormModal = ({ isOpen, employee, onClose }: Props) => {
             control={control}
           />
 
-          <SelectField
-            label="Rol"
-            id="roles"
-            multiple
-            error={errors.roles as FieldError}
-            options={[
-              { value: 'ODONTOLOGO', label: 'Odontólogo' },
-              { value: 'RECEPCIONISTA', label: 'Recepcionista' },
-            ]}
-            control={control}
-          />
+          {
+            showRole && (
+              <SelectField
+                label="Rol"
+                id="roles"
+                multiple
+                error={errors.roles as FieldError}
+                options={[
+                  { value: 'ODONTOLOGO', label: 'Odontólogo' },
+                  { value: 'RECEPCIONISTA', label: 'Recepcionista' },
+                ]}
+                control={control}
+              />
+            )
+          }
         </div>
       </form>
     </Modal>

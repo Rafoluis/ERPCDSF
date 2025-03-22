@@ -14,6 +14,7 @@ import { deleteService } from "@/actions/service.actions";
 import ServiceForm from "./forms/serviceForm";
 import { createPortal } from "react-dom";
 import { showToast } from "@/lib/toast";
+import EmployeeFormModal from "@/app/(dashboard)/admin/components/EmployeeFormModal";
 
 interface ExtendedFormModalProps extends FormContainerProps {
     relatedData?: any;
@@ -47,6 +48,9 @@ const forms: {
     ),
     servicio: (setOpen, type, data, relatedData) => (
         <ServiceForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+    ),
+    doctor: (setOpen, type, data, relatedData) => (
+        <EmployeeFormModal isOpen={true} employee={data} onClose={() => console.log("123")} />
     ),
 };
 
@@ -153,7 +157,9 @@ const FormModal = ({
                 )}
             </button>
 
-            {open &&
+            {open ? table === "doctor" ? (
+                <EmployeeFormModal showRole={false} isOpen={true} employee={data} onClose={() => setOpen(false)} />
+            ) : (
                 createPortal(
                     <div
                         className="w-screen h-screen absolute left-0 top-0 bg-black bg-opacity-60 z-50 flex items-center justify-center"
@@ -173,7 +179,7 @@ const FormModal = ({
                         </div>
                     </div>,
                     document.body
-                )}
+                )) : null}
         </>
     );
 };

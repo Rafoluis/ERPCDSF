@@ -50,10 +50,10 @@ const Modal = ({
           </h2>
           <button
             aria-label="Cerrar modal"
-            className="text-gray-500 hover:text-gray-700 transition"
+            className="text-gray-500 hover:text-gray-70 rounded-full p-2 hover:bg-gray-100 transition"
             onClick={onClose}
           >
-            <X size={20} />
+            <X size={16} />
           </button>
         </div>
 

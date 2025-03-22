@@ -39,7 +39,7 @@ export async function middleware(req: NextRequest) {
   const isAuthenticated = !!req.cookies.get('next-auth.session-token') || !!req.cookies.get('__Secure-next-auth.session-token')
 
   if (publicRoutes.includes(pathname)) {
-    if (isAuthenticated && pathname === '/auth/login') {
+    if (isAuthenticated && (pathname === '/auth/login' || pathname === '/auth/register')) {
       const token = await getToken({ req })
       const userRole = (token?.role as string || 'guest').toLowerCase()
       const roleDefaultRoute = defaultRoutes[userRole as keyof typeof defaultRoutes] || defaultRoutes.guest
@@ -71,7 +71,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    '/',
     '/auth/:path*',
     '/list/:path*',
     '/doctor/:path*',
