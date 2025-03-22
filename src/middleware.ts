@@ -38,6 +38,10 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
   const isAuthenticated = !!req.cookies.get('next-auth.session-token') || !!req.cookies.get('__Secure-next-auth.session-token')
 
+  if (pathname === '/' || pathname === '') {
+    return NextResponse.redirect(new URL('/auth/login', req.url))
+  }
+
   if (publicRoutes.includes(pathname)) {
     if (isAuthenticated && (pathname === '/auth/login' || pathname === '/auth/register')) {
       const token = await getToken({ req })
@@ -71,6 +75,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    '/',
     '/auth/:path*',
     '/list/:path*',
     '/doctor/:path*',
