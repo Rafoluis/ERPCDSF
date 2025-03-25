@@ -23,9 +23,9 @@ const baseContainerClasses = `
   transition-transform
   duration-200
   transform
-  hover:scale-105
-`
-
+  `
+  // hover:scale-105
+  
 const baseIconClasses = `
   transition-colors
   duration-200
@@ -35,8 +35,8 @@ const TableAction = ({
   icon,
   className,
   onClick,
-  iconColor = 'text-slate-500',
-  hoverBgColor = 'hover:bg-slate-200',
+  // iconColor = 'text-slate-500',
+  // hoverBgColor = 'hover:bg-slate-200',
   hoverIconColor,
 }: Props) => {
   return (
@@ -44,14 +44,14 @@ const TableAction = ({
       onClick={onClick}
       className={cn(
         baseContainerClasses,
-        hoverBgColor,
+        // hoverBgColor,
         className
       )}
     >
       {React.cloneElement(icon, {
-        size: 14,
+        size: 18,
         className: cn(
-          iconColor,
+          // iconColor,
           hoverIconColor && `group-hover:${hoverIconColor}`,
           baseIconClasses,
           icon.props.className

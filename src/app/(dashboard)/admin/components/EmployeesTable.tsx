@@ -56,17 +56,19 @@ const EmployeesTable = ({
         customActions={(row) => (
           <>
             <TableAction
-              className='p-2 w-7 rounded-full shadow-sm hover:shadow-md bg-cyan-100 hover:bg-cyan-200'
-              icon={<Pencil className='text-blue-600' />}
+              // className='p-2 w-7 rounded-full shadow-sm hover:shadow-md bg-cyan-100 hover:bg-cyan-200'
+              className='bg-cyan-100'
+              icon={<Pencil size={18} />}
               onClick={() => onEditEmployee(row)}
-              hoverIconColor='text-blue-800'
+              // hoverIconColor='text-blue-800'
             />
 
             <TableAction
-              className='bg-red-100 w-7 rounded-full hover:shadow-md hover:bg-red-200'
-              icon={<Trash2 className='text-red-600' />}
+              // className='bg-red-100 w-7 rounded-full hover:shadow-md hover:bg-red-200'
+              className='bg-red-100'
+              icon={<Trash2 size={18} />}
               onClick={() => onDeleteEmployee(row)}
-              hoverIconColor='text-red-800'
+              // hoverIconColor='text-red-800'
             />
           </>
         )}
