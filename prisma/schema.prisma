@@ -63,6 +63,7 @@ model Empleado {
   id_usuario     Int       @unique
   especialidad   String
   citas          Cita[]
+  historiaClinica Historia_Clinica[]
   fecha_creacion DateTime  @default(now())
   deletedAt      DateTime?
 
@@ -147,16 +148,38 @@ model Pago {
 }
 
 model Historia_Clinica {
-  id_historia    Int       @id @default(autoincrement())
-  id_paciente    Int       @unique
-  fecha_creacion DateTime  @default(now())
-  antecedentes   String?
-  tratamientos   String?
-  medicamentos   String?
-  observaciones  String?
-  deletedAt      DateTime?
+  id_historia                 Int       @id @default(autoincrement())
+  id_paciente                 Int       @unique
+  id_empleado                 Int       
+  fecha_creacion              DateTime  @default(now())
+  motivo_consulta             String
+  enfermedad_actual           String
+  tiempo_enfermedad           String?
+  signos_sintomas_principales String?
+  relato_cronologico          String?
+  funciones_biologicas        String?
+  antecedentes_familiares     String?
+  antecedentes_personales     String?
+
+  presion_arterial           String?   
+  frecuencia_cardiaca        Int?      
+  temperatura                Float?    
+  frecuencia_respiratoria     Int?      
+
+  examen_clinico_general      String?
+  diagnostico_presuntivo      String?
+  diagnostico_definitivo      String?
+  plan_tratamiento            String?
+  pronostico                 String?
+  tratamiento_recomendaciones String?
+
+  control_evolucion          String?
+  alta_paciente              String?
+
+  deletedAt                   DateTime?
 
   paciente Paciente @relation(fields: [id_paciente], references: [id_paciente])
+  empleado Empleado @relation(fields: [id_empleado], references: [id_empleado])
 }
 
 enum EstadoPago {
