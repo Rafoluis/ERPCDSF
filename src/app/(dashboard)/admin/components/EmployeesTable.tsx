@@ -12,13 +12,13 @@ interface Props {
   onEditEmployee: (employee: Employee) => void
 }
 
-const EmployeesTable = ({
+export default function EmployeesTable({
   getAllEmployees,
   columns,
   onDeleteEmployee,
   onEditEmployee,
-}: Props) => {
-  const {data, total} = use(getAllEmployees)
+}: Props) {
+  const { data, total } = use(getAllEmployees)
 
   return (
     <>
@@ -43,11 +43,10 @@ const EmployeesTable = ({
           ),
           estado: (row) => (
             <span
-              className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                row.estado === 'Activo'
-                  ? 'bg-green-100 text-green-600'
-                  : 'bg-red-100 text-red-600'
-              }`}
+              className={`px-2 py-1 rounded-full text-xs font-semibold ${row.estado === 'Activo'
+                ? 'bg-green-100 text-green-600'
+                : 'bg-red-100 text-red-600'
+                }`}
             >
               {row.estado}
             </span>
@@ -56,17 +55,21 @@ const EmployeesTable = ({
         customActions={(row) => (
           <>
             <TableAction
-              className='p-2 w-7 rounded-full shadow-sm hover:shadow-md bg-cyan-100 hover:bg-cyan-200'
-              icon={<Pencil className='text-blue-600' />}
+              icon={<Pencil />}
               onClick={() => onEditEmployee(row)}
-              hoverIconColor='text-blue-800'
+              className="shadow-sm hover:shadow-md bg-cyan-100 hover:bg-cyan-200"
+              iconColor="text-black"
+              hoverIconColor="text-black"
+              iconSize="w-4 h-4"
             />
 
             <TableAction
-              className='bg-red-100 w-7 rounded-full hover:shadow-md hover:bg-red-200'
-              icon={<Trash2 className='text-red-600' />}
+              icon={<Trash2 />}
               onClick={() => onDeleteEmployee(row)}
-              hoverIconColor='text-red-800'
+              className="shadow-sm hover:shadow-md bg-red-100 hover:bg-red-200"
+              iconColor="text-black"
+              hoverIconColor="text-black"
+              iconSize="w-4 h-4"
             />
           </>
         )}
@@ -75,5 +78,3 @@ const EmployeesTable = ({
     </>
   )
 }
-
-export default EmployeesTable

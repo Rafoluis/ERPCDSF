@@ -1,6 +1,6 @@
 import { authOptions } from '@/lib/auth';
 import AppointmentCard, { getCurrentDatePeru } from "@/components/appointmentCard";
-import BigCalendarContainer from "@/components/calendarContainer";
+import BigCalendarContainer from "@/components/calendar/calendarContainer";
 import Pagination from "@/components/pagination";
 import Table from "@/components/table";
 import TableSearch from "@/components/tableSearch";

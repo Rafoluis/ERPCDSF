@@ -246,7 +246,7 @@ const AppointmentListPage = async ({
 
     return (
         <div>
-            <div className=' rounded-md flex-1 m-4 mt-0'>
+            <div className='rounded-md flex-1 m-4 mt-0'>
                 {/* CARTAS CITAS */}
                 <div className="flex items-center justify-between p-2">
                     <h1 className="hidden md:block text-lg font-semibold">Gestión de citas</h1>

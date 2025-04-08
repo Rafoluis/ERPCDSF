@@ -26,16 +26,19 @@ const AdminPage = async ({ searchParams }: AdminPageProps) => {
   const employeesPromise = getAllEmployees(search, start, end, sort, column, page)
 
   return (
-    <>
-      <h1 className="hidden py-2 md:block text-lg font-semibold m-4 mt-0">Gestión de empleados</h1>
+    <div>
+      <div className="rounded-md flex-1 m-4 mt-0">
+        <div className="flex items-center justify-between p-2">
+          <h1 className="hidden md:block text-lg font-semibold">
+            Gestión de empleados
+          </h1>
+        </div>
+      </div>
 
-      <section className="p-4 bg-backgrounddefault rounded-md flex-1 m-4 mt-0">
-        <EmployeeManagement
-          columns={columns}
-          getAllEmployees={employeesPromise}
-        />
-      </section>
-    </>
+      <div className="bg-backgrounddefault p-4 rounded-md flex-1 m-4 mt-0">
+        <EmployeeManagement columns={columns} getAllEmployees={employeesPromise} />
+      </div>
+    </div>
   )
 }
 

@@ -1,6 +1,6 @@
 "use server"
 
-import { PatientSchema } from "../lib/formSchema"
+import { PatientSchema } from "@/schemas/patient.schema";
 import prisma from "../lib/prisma";
 
 type CurrentState = { success: boolean; error: string | null }

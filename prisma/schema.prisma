@@ -159,6 +159,22 @@ model Historia_Clinica {
   paciente Paciente @relation(fields: [id_paciente], references: [id_paciente])
 }
 
+model Empresa {
+  id_empresa          Int       @id @default(autoincrement())
+  ruc                 String    @unique
+  razon_social        String
+  nombre_comercial    String?
+  domicilio_fiscal    String?
+  ubigeo              String?
+  actividad_economica String?
+  tipo_contribuyente  String?
+  clave_sol           String?
+  telefono            String?
+  email               String?   @unique
+  fecha_creacion      DateTime  @default(now())
+  deletedAt           DateTime?
+}
+
 enum EstadoPago {
   PENDIENTE
   COMPLETADO

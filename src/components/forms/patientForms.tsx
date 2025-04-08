@@ -3,12 +3,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import InputField from "../inputField";
-import { patientSchema, PatientSchema } from "@/lib/formSchema";
+
 import { startTransition, useActionState } from "react";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { createPatient, updatePatient } from "@/actions/patient.actions";
 import { showToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
+import { patientSchema, PatientSchema } from "@/schemas/patient.schema";
 
 interface PatientFormProps {
     type: "create" | "update";

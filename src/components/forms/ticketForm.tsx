@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import InputField from "../inputField";
-import { TicketSchema, ticketSchema } from "@/lib/formSchema";
 import { startTransition, useActionState } from "react";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
@@ -12,6 +11,7 @@ import { createTicket, updateTicket } from "@/actions/ticket.actions";
 import AutocompleteSelect, { OptionType } from "../autocompleteSelect";
 import { SingleValue } from "react-select";
 import { showToast } from "@/lib/toast";
+import { ticketSchema, TicketSchema } from "@/schemas/ticket.schema";
 
 const TicketForm = ({
     type,

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import InputField from "../inputField";
-import { doctorSchema, DoctorSchema } from "@/lib/formSchema";
+import { doctorSchema, DoctorSchema } from "@/schemas/doctor.schema";
 import { startTransition, useActionState } from "react";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { createDoctor, updateDoctor } from "@/actions/doctor.actions";

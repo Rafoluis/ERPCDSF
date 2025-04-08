@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import InputField from "../inputField";
 import { createAppointment, updateAppointment } from "@/actions/appointment.actions";
-import { appointmentSchema, AppointmentSchema } from "@/lib/formSchema";
 import { startTransition, useActionState, useState } from "react";
 import { Dispatch, SetStateAction, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -15,6 +14,7 @@ import { SingleValue } from "react-select";
 import AutocompleteSelect, { OptionType } from "../autocompleteSelect";
 import FormModal from "../formModal";
 import { showToast } from "@/lib/toast";
+import { appointmentSchema, AppointmentSchema } from "@/schemas/appointment.schema";
 
 type SelectedService = { service: Servicio; quantity: number };
 
@@ -73,12 +73,11 @@ const AppointmentForm = ({
     useEffect(() => {
         if (state.success) {
             const message = `La cita ha sido ${type === "create" ? "creada" : "actualizada"}`;
-            // toast(`La cita ha sido ${type === "create" ? "creada" : "actualizada"}`);
+            // toast(La cita ha sido ${type === "create" ? "creada" : "actualizada"});
             showToast("success", message);
             setOpen(false);
             router.refresh();
         } else if (state.error) {
-            // toast("Error en la acción: " + state.error);
             showToast("error", state.error);
             console.error("Error en la acción:", state.error);
         }
@@ -183,7 +182,6 @@ const AppointmentForm = ({
             )
         );
     };
-
 
     const serviceColumns = [
         { header: "Servicio", accessor: "nombre", className: "text-sm font-bold p-1" },
@@ -364,15 +362,12 @@ const AppointmentForm = ({
                 <div className="w-24">
                     <InputField
                         label="Cantidad"
-                        name="cantidadServicio"
-                        min={1}
+                        name="cantidad"
                         type="number"
                         defaultValue="1"
-                        value={selectedQuantity}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                            setSelectedQuantity(e.target.value)
-                        }
-                        register={() => { }}
+                        min={1}
+                        register={register}
+                        error={errors.cantidad}
                     />
                 </div>
                 <div className="w-auto">
@@ -381,8 +376,7 @@ const AppointmentForm = ({
                         type="button"
                         onClick={handleAddService}
                         disabled={!selectedServiceId}
-                        className={`flex items-center gap-2 px-3 py-2 rounded text-sm text-white ${selectedServiceId ? "bg-backbuttondefault" : "bg-gray-400"
-                            }`}
+                        className={`flex items-center gap-2 px-3 py-2 rounded text-sm text-white ${selectedServiceId ? "bg-backbuttondefault" : "bg-gray-400"}`}
                     >
                         <Plus size={17} color="white" /> Agregar servicio
                     </button>

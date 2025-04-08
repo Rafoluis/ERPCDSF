@@ -1,6 +1,6 @@
 "use server"
 
-import { ServiceSchema } from "../lib/formSchema";
+import { ServiceSchema } from "@/schemas/service.schema";
 import prisma from "../lib/prisma";
 
 type CurrentState = { success: boolean; error: string | null };

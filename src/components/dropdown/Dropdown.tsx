@@ -10,7 +10,7 @@ interface DropdownContextProps {
 
 export const DropdownContext = createContext<DropdownContextProps>({
   isOpen: false,
-  toggleDropdown: () => {},
+  toggleDropdown: () => { },
 });
 
 const Dropdown = ({ children }: { children: ReactNode }) => {

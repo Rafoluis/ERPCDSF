@@ -1,6 +1,6 @@
 "use server";
 
-import { AppointmentSchema } from "../lib/formSchema";
+import { AppointmentSchema } from "@/schemas/appointment.schema";
 import prisma from "../lib/prisma";
 
 type CurrentState = { success: boolean; error: string | null };
@@ -264,6 +264,3 @@ export const deleteAppointment = async (
         return { success: false, error: "Error al eliminar la cita" };
     }
 };
-
-
-

@@ -3,12 +3,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import InputField from "../inputField";
-import { serviceSchema, ServiceSchema } from "@/lib/formSchema";
+
 import { startTransition, useActionState } from "react";
 import { Dispatch, SetStateAction, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createService, updateService } from "@/actions/service.actions";
 import { showToast } from "@/lib/toast";
+import { serviceSchema, ServiceSchema } from "@/schemas/service.schema";
 
 const ServiceForm = ({
     type,
@@ -51,8 +52,7 @@ const ServiceForm = ({
             setOpen(false);
             router.refresh();
         } else if (state.error) {
-            showToast("error", "Algo salió mal, inténtalo de nuevo");
-            // toast("Error en la acción: " + state.error);
+            showToast("error", state.error);
             console.error("Error en la acción: ", state.error);
         }
     }, [state]);
@@ -92,10 +92,11 @@ const ServiceForm = ({
                 <InputField
                     label="Tarifa"
                     name="tarifa"
+                    type="number"
                     defaultValue={data?.tarifa}
+                    min={1}
                     register={register}
                     error={errors.tarifa}
-                    type="number"
                 />
             </div>
             {state.error && <span className="text-red-400"> Algo pasó mal </span>}

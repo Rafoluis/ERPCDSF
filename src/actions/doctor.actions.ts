@@ -1,7 +1,7 @@
 "use server"
 
 import prisma from "../lib/prisma";
-import { DoctorSchema } from "../lib/formSchema";
+import { DoctorSchema } from "../schemas/doctor.schema";
 type CurrentState = { success: boolean; error: string | null };
 
 async function isDniDuplicate(dni: string, excludeUserId?: number): Promise<boolean> {

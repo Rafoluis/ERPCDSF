@@ -23,7 +23,7 @@ const menuItems = [
         title: "OTROS",
         items: [
             { label: 'Empleados', href: '/admin', visible: ['admin'] },
-            //{ label: 'Empresa', href: '/company', visible: ['admin'] }
+            { label: 'Empresa', href: '/company', visible: ['admin'] }
         ],
         visible: ['admin']
     }

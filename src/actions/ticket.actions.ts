@@ -1,7 +1,7 @@
 "use server";
 
+import { TicketSchema } from "@/schemas/ticket.schema";
 import prisma from "../lib/prisma";
-import { TicketSchema } from "@/lib/formSchema";
 
 type CurrentState = { success: boolean; error: string | null };
 
