@@ -7,45 +7,44 @@ import { defaultTableStyles } from "./pdfStyles";
 
 type PrintButtonProps = {
   ticketId: number | string;
+  ticketData?: any;
 };
 
-const PrintButton = ({ ticketId }: PrintButtonProps) => {
-  const [ticket, setTicket] = useState<any>(null);
+const PrintButton = ({ ticketId, ticketData }: PrintButtonProps) => {
+  const [ticket, setTicket] = useState<any>(ticketData || null);
 
   useEffect(() => {
-    const fetchTicket = async () => {
-      try {
+    if (!ticketData && ticketId) {
+      const fetchTicket = async () => {
+        try {
+          const res = await fetch(`/api/ticket?id=${ticketId}`);
+          const data = await res.json();
+          if (!res.ok)
+            throw new Error(data.error || "Error al obtener los datos del ticket");
+          setTicket(data);
+        } catch (error) {
+          console.error("Error al obtener los datos del ticket:", error);
+        }
+      };
+      fetchTicket();
+    }
+  }, [ticketId, ticketData]);
+
+  const generatePDF = async () => {
+    try {
+      const ticketToPrint = ticket || (await (async () => {
         const res = await fetch(`/api/ticket?id=${ticketId}`);
         const data = await res.json();
         if (!res.ok)
           throw new Error(data.error || "Error al obtener los datos del ticket");
-        setTicket(data);
-      } catch (error) {
-        console.error("Error al obtener los datos del ticket:", error);
-      }
-    };
-
-    if (ticketId) fetchTicket();
-  }, [ticketId]);
-
-  const generatePDF = async () => {
-    try {
-      // Volver a obtener el ticket actualizado en el momento de generar el PDF
-      const res = await fetch(`/api/ticket?id=${ticketId}`);
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Error al obtener los datos del ticket");
-      }
-      const ticketToPrint = data;
+        return data;
+      })());
 
       const doc = new jsPDF("p", "mm", "a4");
-      const pageWidth = doc.internal.pageSize.getWidth(); // 210 mm
-      const pageHeight = doc.internal.pageSize.getHeight(); // 297 mm
-
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
       const defaultMargin = { left: 14, right: 14 };
-
       const logoData = "/logodental.png";
-      // (x=10, y=15) ancho=35 alto=25
       doc.addImage(logoData, "PNG", 10, 15, 35, 25);
 
       const companyX = 50;
@@ -64,17 +63,17 @@ const PrintButton = ({ ticketId }: PrintButtonProps) => {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
       doc.text(
-        `CÓDIGO DE COMPROBANTE: ${ticket.id_ticket}`,
+        `CÓDIGO DE COMPROBANTE: ${ticketToPrint.id_ticket}`,
         pageWidth / 2,
         56,
         { align: "center" }
       );
 
-      const paciente = ticket?.paciente
+      const paciente = ticketToPrint?.paciente
         ? {
-          nombreCompleto: `${ticket.paciente.usuario.nombre} ${ticket.paciente.usuario.apellido}`,
-          direccion: ticket.paciente.usuario.direccion || "No registrada",
-          dni: ticket.paciente.usuario.dni,
+          nombreCompleto: `${ticketToPrint.paciente.usuario.nombre} ${ticketToPrint.paciente.usuario.apellido}`,
+          direccion: ticketToPrint.paciente.usuario.direccion || "No registrada",
+          dni: ticketToPrint.paciente.usuario.dni,
         }
         : { nombreCompleto: "No encontrado", direccion: "", dni: "" };
 
@@ -89,13 +88,13 @@ const PrintButton = ({ ticketId }: PrintButtonProps) => {
         ],
       });
 
-      const fechaEmision = ticket.fecha_emision
-        ? new Date(ticket.fecha_emision).toLocaleDateString("es-PE", {
+      const fechaEmision = ticketToPrint.fecha_emision
+        ? new Date(ticketToPrint.fecha_emision).toLocaleDateString("es-PE", {
           timeZone: "UTC",
         })
         : "";
-      const estadoPago = ticket.deuda_restante > 0 ? "PAGO PARCIAL" : "PAGO TOTAL";
-      const medioPago = ticket.medio_pago || "EFECTIVO";
+      const estadoPago = ticketToPrint.deuda_restante > 0 ? "PAGO PARCIAL" : "PAGO TOTAL";
+      const medioPago = ticketToPrint.medio_pago || "EFECTIVO";
       const moneda = "SOLES";
 
       doc.autoTable({
@@ -113,7 +112,6 @@ const PrintButton = ({ ticketId }: PrintButtonProps) => {
         body: [[fechaEmision, estadoPago, medioPago, moneda]],
       });
 
-      // TABLA
       let itemsWithDate: Array<{
         fechaCita: Date;
         serviceName: string;
@@ -122,8 +120,8 @@ const PrintButton = ({ ticketId }: PrintButtonProps) => {
         tarifa: number;
       }> = [];
 
-      if (ticket?.ticketCitas?.length > 0) {
-        ticket.ticketCitas.forEach((ticketCita: any) => {
+      if (ticketToPrint?.ticketCitas?.length > 0) {
+        ticketToPrint.ticketCitas.forEach((ticketCita: any) => {
           if (ticketCita.cita && ticketCita.cita.servicios?.length > 0) {
             const fechaCita = new Date(ticketCita.cita.fecha_cita);
             const fechaFormatted = fechaCita.toLocaleDateString("es-PE", {
@@ -145,7 +143,7 @@ const PrintButton = ({ ticketId }: PrintButtonProps) => {
               });
             });
           } else {
-            const fechaFallback = new Date(ticket.fecha_emision);
+            const fechaFallback = new Date(ticketToPrint.fecha_emision);
             const fechaFormatted = fechaFallback.toLocaleDateString("es-PE", {
               timeZone: "UTC",
             });
@@ -154,12 +152,12 @@ const PrintButton = ({ ticketId }: PrintButtonProps) => {
               serviceName: "CONSULTA",
               description: `De la cita - ${fechaFormatted}`,
               cantidad: 1,
-              tarifa: ticket.monto_total || 0,
+              tarifa: ticketToPrint.monto_total || 0,
             });
           }
         });
       } else {
-        const fechaFallback = new Date(ticket.fecha_emision);
+        const fechaFallback = new Date(ticketToPrint.fecha_emision);
         const fechaFormatted = fechaFallback.toLocaleDateString("es-PE", {
           timeZone: "UTC",
         });
@@ -168,7 +166,7 @@ const PrintButton = ({ ticketId }: PrintButtonProps) => {
           serviceName: "CONSULTA",
           description: `De la cita - ${fechaFormatted}`,
           cantidad: 1,
-          tarifa: ticket.monto_total || 0,
+          tarifa: ticketToPrint.monto_total || 0,
         });
       }
 
@@ -190,10 +188,8 @@ const PrintButton = ({ ticketId }: PrintButtonProps) => {
         body: items,
       });
 
-      // ALTO FIJO
       const bottomSectionHeight = 100;
       const bottomSectionStart = pageHeight - bottomSectionHeight;
-
       const rectX = defaultMargin.left;
       const rectWidth = pageWidth - (defaultMargin.left + defaultMargin.right);
       const rectHeight = 8;
@@ -205,7 +201,7 @@ const PrintButton = ({ ticketId }: PrintButtonProps) => {
 
       doc.setFontSize(10);
       doc.text(
-        `SON: ${ticket.monto_total} SOLES CON CERO CÉNTIMOS`,
+        `SON: ${ticketToPrint.monto_total} SOLES CON CERO CÉNTIMOS`,
         rectX + 2,
         rectY + 5,
         { align: "left" }
@@ -222,10 +218,9 @@ const PrintButton = ({ ticketId }: PrintButtonProps) => {
         body: [["Observación de ejemplo"]],
       });
 
-      const total = ticket.monto_total || 0;
-      const pagado = ticket.monto_pagado || 0;
-      const deuda = ticket.deuda_restante || 0;
-
+      const total = ticketToPrint.monto_total || 0;
+      const pagado = ticketToPrint.monto_pagado || 0;
+      const deuda = ticketToPrint.deuda_restante || 0;
       const summaryData = [
         ["OP. GRAVADAS", `S/ ${total}`],
         ["OP. INAFECTAS", "S/ 0"],
@@ -249,7 +244,6 @@ const PrintButton = ({ ticketId }: PrintButtonProps) => {
         body: summaryData,
       });
 
-      // PIE DE PAGINA
       doc.setFontSize(8);
       doc.text(
         "Esta es una representación impresa de la Boleta electrónica, puede verificarlo utilizando ...",
@@ -262,6 +256,7 @@ const PrintButton = ({ ticketId }: PrintButtonProps) => {
       console.error("Error al generar el PDF:", error);
     }
   };
+
   return (
     <button
       className="w-7 h-7 flex items-center justify-center rounded-full bg-indigo-200 hover:bg-indigo-300"

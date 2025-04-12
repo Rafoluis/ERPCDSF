@@ -21,7 +21,6 @@ export const createPatient = async (
             : null;
 
         console.log("Fecha de nacimiento formateada:", fechaNacimientoPeru);
-
         await prisma.paciente.create({
             data: {
                 usuario: {

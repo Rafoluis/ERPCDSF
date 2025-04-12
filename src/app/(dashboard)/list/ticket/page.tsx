@@ -1,7 +1,6 @@
 import FormContainer from "@/components/formContainer"
 import Pagination from "@/components/pagination"
 import PrintButton from "@/components/printer/printerButton"
-import SunatBoleta from "@/components/sunat"
 import Table from "@/components/table"
 import TableSearch from "@/components/tableSearch"
 import prisma from "@/lib/prisma"
@@ -55,7 +54,7 @@ const renderRow = (item: TicketList) => (
         <td className="hidden md:table-cell">{item.medio_pago}</td>
         <td>
             <div className="flex items-center gap-2">
-                <PrintButton ticketId={item.id_ticket} />
+                <PrintButton ticketId={item.id_ticket} ticketData={item} />
                 {/* <SunatBoleta ticketId={1} /> */}
                 {"recepcionista" === "recepcionista" && (
                     <>

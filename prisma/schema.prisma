@@ -66,7 +66,8 @@ model Empleado {
   fecha_creacion DateTime  @default(now())
   deletedAt      DateTime?
 
-  usuario Usuario @relation(fields: [id_usuario], references: [id_usuario])
+  usuario              Usuario          @relation(fields: [id_usuario], references: [id_usuario])
+  asignacionesHistoria DoctorAsignado[]
 }
 
 model Servicio {
@@ -147,16 +148,32 @@ model Pago {
 }
 
 model Historia_Clinica {
-  id_historia    Int       @id @default(autoincrement())
-  id_paciente    Int       @unique
-  fecha_creacion DateTime  @default(now())
-  antecedentes   String?
-  tratamientos   String?
-  medicamentos   String?
-  observaciones  String?
-  deletedAt      DateTime?
+  id_historia           Int       @id @default(autoincrement())
+  id_paciente           Int       @unique
+  fecha_creacion        DateTime  @default(now())
+  fecha_ultima_consulta DateTime?
+  estado_tratamiento    String?
+  fecha_alta            DateTime?
+  antecedentes          String?
+  tratamientos          String?
+  medicamentos          String?
+  observaciones         String?
+  deletedAt             DateTime?
 
-  paciente Paciente @relation(fields: [id_paciente], references: [id_paciente])
+  paciente     Paciente         @relation(fields: [id_paciente], references: [id_paciente])
+  asignaciones DoctorAsignado[]
+}
+
+model DoctorAsignado {
+  id_historia      Int
+  id_empleado      Int
+  fecha_asignacion DateTime  @default(now())
+  fecha_retiro     DateTime?
+
+  historia Historia_Clinica @relation(fields: [id_historia], references: [id_historia])
+  empleado Empleado         @relation(fields: [id_empleado], references: [id_empleado])
+
+  @@id([id_historia, id_empleado, fecha_asignacion])
 }
 
 model Empresa {
