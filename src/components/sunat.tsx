@@ -1,7 +1,5 @@
 "use client";
 import { useState } from "react";
-import PrintButton from "./printer/printerButton";
-
 
 const SunatBoleta = ({ ticketId }: { ticketId: number | string }) => {
     const [ticket, setTicket] = useState("");

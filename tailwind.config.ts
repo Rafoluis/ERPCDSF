@@ -19,6 +19,7 @@ export default {
         backmenu: "var(--blue-dark-bg)",
         backpage: "var(--page-bg)",
         backbuttondefault: "var(--button-default-bg)",
+        backbuttonhover: "var(--button-hover-default-bg)",
         backbuttonsecondary: "var(--button-secondary-bg)",
         backbuttongreen: "var(--button-green-bg)",
         backbuttonyellow: "var(--button-yellow-bg)",

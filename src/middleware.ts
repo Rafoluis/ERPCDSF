@@ -8,22 +8,25 @@ const roleBasedRoutes = {
     '/list/appointments',
     '/list/patients',
     '/list/service',
-    '/list/dentalHistoryR',
+    '/list/dentalHistory',
     '/list/ticket',
     '/list/doctors',
+    '/list/dentalHistory/new',
     '/admin',
     '/company'
   ],
   recepcionista: [
     '/list/appointments',
     '/list/patients',
-    '/list/dentalHistoryR',
+    '/list/dentalHistory',
     '/list/ticket',
     '/list/doctors'
   ],
   odontologo: [
     '/list/appointmentBooks',
-    '/HistoriasClinicasD'
+    '/HistoriasClinicasD',
+    '/list/dentalHistory',
+    '/list/dentalHistory/neww',
   ]
 }
 
