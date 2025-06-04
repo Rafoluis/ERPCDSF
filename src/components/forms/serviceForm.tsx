@@ -102,7 +102,7 @@ const ServiceForm = ({
             {state.error && <span className="text-red-400"> Algo pasó mal </span>}
             <button
                 type="submit"
-                className="bg-backbuttondefault text-white p-2 rounded-md"
+                className="bg-backbuttondefault hover:bg-backbuttonhover text-white p-2 rounded-md"
             >
                 {type === "create" ? "Crear" : "Actualizar"}
             </button>

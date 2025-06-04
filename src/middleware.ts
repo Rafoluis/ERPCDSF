@@ -13,7 +13,8 @@ const roleBasedRoutes = {
     '/list/doctors',
     '/list/dentalHistory/new',
     '/admin',
-    '/company'
+    '/company',
+    '/list/odontograma',
   ],
   recepcionista: [
     '/list/appointments',

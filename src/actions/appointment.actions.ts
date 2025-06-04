@@ -155,6 +155,8 @@ const processAppointment = async (
                 id_empleado: data.id_empleado,
                 estado: data.estado,
                 deuda_restante: newDebt,
+                id_especialidad: data.id_especialidad ?? null,
+                observaciones: data.observaciones ?? undefined, 
             };
 
             console.log("Update payload:", updatePayload);
@@ -205,6 +207,8 @@ const processAppointment = async (
                     estado: data.estado,
                     monto_pagado: 0,
                     deuda_restante: totalCost,
+                    id_especialidad: data.id_especialidad ?? null,
+                    observaciones: data.observaciones ?? undefined, 
                     servicios:
                         serviciosData.length > 0
                             ? {
@@ -226,8 +230,6 @@ const processAppointment = async (
         };
     }
 };
-
-
 
 export const createAppointment = async (currentState: CurrentState, data: AppointmentSchema) => {
     return processAppointment(currentState, data, false);

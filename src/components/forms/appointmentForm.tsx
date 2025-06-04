@@ -68,7 +68,23 @@ const AppointmentForm = ({
         );
         console.log("Form submitted with modified data", formData);
         startTransition(() => formAction(formData));
-    });
+    },
+  );
+
+    useEffect(() => {
+        if (type === "update" && relatedData) {
+          if (relatedData.selectedEspecialidad?.id_especialidad != null) {
+            setValue(
+              "id_especialidad",
+              relatedData.selectedEspecialidad.id_especialidad,
+              { shouldValidate: true }
+            );
+          }
+          if (relatedData.observaciones) {
+            setValue("observaciones", relatedData.observaciones, { shouldValidate: true });
+          }
+        }
+      }, [type, relatedData, setValue]);
 
     useEffect(() => {
         if (state.success) {
@@ -93,7 +109,7 @@ const AppointmentForm = ({
             label: labelFn(item),
         }));
 
-    const { empleados, servicios } = relatedData;
+    const { empleados, servicios , especialidades} = relatedData;
     const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
     const [selectedServiceId, setSelectedServiceId] = useState<string>("");
     const [selectedQuantity, setSelectedQuantity] = useState<string>("1");
@@ -253,7 +269,7 @@ const AppointmentForm = ({
                     </div>
                 )}
             />
-            {error && <p className="text-xs text-red-400">{error.message.toString()}</p>}
+            {error && <p className="text-xs text-red-400 min-h-[20px]">{error.message.toString()}</p>}
         </div>
     );
 
@@ -269,166 +285,224 @@ const AppointmentForm = ({
     );
 
     return (
-        <form className="flex flex-col gap-8" onSubmit={onSubmit}>
-            <h1 className="text-xl font-semibold">
-                {type === "create" ? "Registrar nueva cita" : "Actualizar cita"}
-            </h1>
+        <form className="flex flex-col gap-8 p-1 overflow-y-auto max-h-[calc(100vh-4rem)]" onSubmit={onSubmit}>
+        <h1 className="text-xl font-semibold">
+          {type === "create" ? "Registrar nueva cita" : "Actualizar cita"}
+        </h1>
+      
+        {data && (
+          <InputField
+            label="Id"
+            name="id_cita"
+            defaultValue={data.id_cita}
+            register={register}
+            error={errors.id_cita}
+            hidden
+          />
+        )}
 
-            {data && (
-                <InputField
-                    label="Id"
-                    name="id_cita"
-                    defaultValue={data?.id_cita}
-                    register={register}
-                    error={errors?.id_cita}
-                    hidden
-                />
-            )}
+        <div className="flex items-end space-x-4 w-full">
+        <div className="flex-1">
+          {renderAutocompleteField(
+            "id_paciente",
+            "Paciente",
+            patientOptions,
+            type === "create" ? undefined : data?.id_paciente,
+            <div className="w-auto">
+              <label className="text-xs text-transparent mb-1 block">Acción</label>
+              <FormModal
+                table="paciente"
+                type="create"
+                onSuccess={handlePatientSuccess}
+                variant="appointment"
+              />
+            </div>,
+            errors.id_paciente
+          )}
+        </div>
+      </div>
 
-            {/* Selección de Paciente y Odontólogo */}
-            <div className="grid grid-cols-1 gap-4">
-                {renderAutocompleteField(
-                    "id_paciente",
-                    "Paciente",
-                    patientOptions,
-                    type === "create" ? undefined : data?.id_paciente,
-                    <div className="w-auto">
-                        <label className="text-xs text-transparent mb-1 block">Acción</label>
-                        <FormModal table="paciente" type="create" onSuccess={handlePatientSuccess} variant="appointment" />
-                    </div>,
-                    errors.id_paciente
-                )}
-                {renderAutocompleteField(
-                    "id_empleado",
-                    "Médico",
-                    employeeOptions,
-                    type === "create" ? undefined : data?.id_empleado,
-                    undefined,
-                    errors.id_empleado
-                )}
-            </div>
-
-            {/* Fecha y Hora */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div className="flex flex-col gap-2">
-                    <InputField
-                        label="Fecha y hora de cita"
-                        name="fecha_cita"
-                        defaultValue={
-                            data?.fecha_cita
-                                ? new Date(data.fecha_cita).toISOString().slice(0, 16)
-                                : ""
-                        }
-                        register={register}
-                        error={errors.fecha_cita}
-                        type="datetime-local"
-                    />
-                </div>
-                <div className="flex flex-col gap-2 w-full md:w-1/2">
-                    <InputField
-                        label="Hora Final"
-                        name="hora_cita_final"
-                        defaultValue={
-                            data?.hora_cita_final
-                                ? new Date(data.hora_cita_final).toISOString().slice(11, 16)
-                                : ""
-                        }
-                        register={register}
-                        error={errors.hora_cita_final}
-                        type="time"
-                    />
-                </div>
-            </div>
-
-            {patientHasDebt && (
-                <p className="text-red-500 text-sm mt-1">
-                    El paciente tiene deudas pendientes de pago
-                </p>
-            )}
-
-            {/* Servicio, Cantidad y Tarifa */}
-            <div className="flex items-center gap-2 md:gap-4">
-                <div className="w-64">
-                    <AutocompleteSelect
-                        name="servicioSelect"
-                        label="Servicio"
-                        options={serviceOptions}
-                        value={serviceOptions.find((option) => option.value === selectedServiceId) || null}
-                        onChange={(selectedOption: SingleValue<OptionType>) =>
-                            setSelectedServiceId(selectedOption ? String(selectedOption.value) : "")
-                        }
-                    />
-                </div>
-                <div className="w-24">
-                    <InputField
-                        label="Cantidad"
-                        name="cantidad"
-                        type="number"
-                        defaultValue="1"
-                        min={1}
-                        register={register}
-                        error={errors.cantidad}
-                    />
-                </div>
-                <div className="w-auto">
-                    <label className="text-xs text-transparent mb-1 block">Acción</label>
-                    <button
-                        type="button"
-                        onClick={handleAddService}
-                        disabled={!selectedServiceId}
-                        className={`flex items-center gap-2 px-3 py-2 rounded text-sm text-white ${selectedServiceId ? "bg-backbuttondefault" : "bg-gray-400"}`}
-                    >
-                        <Plus size={17} color="white" /> Agregar servicio
-                    </button>
-                </div>
-            </div>
-
-            {servicesDataForTable.length > 0 && (
-                <div>
-                    <h3 className="text-xs text-gray-500 mt-1">Servicios seleccionados:</h3>
-                    <div className="border border-gray-300 rounded-md p-2 mt-1">
-                        <Table
-                            columns={serviceColumns}
-                            data={servicesDataForTable}
-                            renderRow={renderServiceRow}
-                        />
-                    </div>
-                </div>
-            )}
-
-            {errors.servicios?.message && (
-                <p className="text-xs text-red-400">{errors.servicios.message.toString()}</p>
-            )}
-
-            {/* Estado */}
-            <div className="flex flex-col gap-2 w-full md:w-1/2">
-                <label className="text-xs text-gray-500">Estado</label>
-                <select
-                    className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
-                    {...register("estado")}
-                    defaultValue={data?.estado}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium">Especialidad</label>
+            <select
+              {...register("id_especialidad")}
+              className="mt-1 w-full border rounded p-2 text-sm"
+            >
+              <option value="">Seleccione</option>
+              {especialidades.map((esp: any) => (
+                <option
+                  key={esp.id_especialidad}
+                  value={esp.id_especialidad.toString()}
                 >
-                    <option value="AGENDADO">Agendado</option>
-                    <option value="COMPLETADO">Completado</option>
-                    <option value="EN_PROCESO">En proceso</option>
-                    <option value="FINALIZADO">Finalizado</option>
-                    <option value="CANCELADO">Cancelado</option>
-                </select>
-                {errors.estado?.message && (
-                    <p className="text-xs text-red-400">{errors.estado.message.toString()}</p>
-                )}
-                {type === "update" && data?.deuda_restante === 0 && (
-                    <p className="text-green-600 font-bold text-sm mt-1">
-                        La cita ha sido paga
-                    </p>
-                )}
-            </div>
+                  {esp.nombre}
+                </option>
+              ))}
+            </select>
+            {errors.id_especialidad && (
+              <p className="text-xs text-red-400 min-h-[20px]">
+                {errors.id_especialidad.message?.toString()}
+              </p>
+            )}
+          </div>
+          {renderAutocompleteField(
+            "id_empleado",
+            "Médico",
+            employeeOptions,
+            type === "create" ? undefined : data?.id_empleado,
+            undefined,
+            errors.id_empleado
+          )}
+        </div>
 
-            {state.error && <span className="text-red-400">Algo pasó mal</span>}
-            <button type="submit" className="bg-backbuttondefault text-white p-2 rounded-md">
-                {type === "create" ? "Crear" : "Actualizar"}
-            </button>
-        </form>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 items-stretch">
+        {/* Fecha y hora */}
+        <div className="flex flex-col justify-end h-full">
+            <InputField
+            label="Fecha y hora de cita"
+            name="fecha_cita"
+            defaultValue={
+                data?.fecha_cita
+                ? new Date(data.fecha_cita).toISOString().slice(0, 16)
+                : ""
+            }
+            register={register}
+            type="datetime-local"
+            />
+            <span className="text-xs text-red-400 min-h-[20px]">
+            {errors.fecha_cita?.message}
+            </span>
+        </div>
+
+        {/* Hora Final */}
+        <div className="flex flex-col justify-end h-full">
+            <InputField
+            label="Hora Final"
+            name="hora_cita_final"
+            defaultValue={
+                data?.hora_cita_final
+                ? new Date(data.hora_cita_final).toISOString().slice(11, 16)
+                : ""
+            }
+            register={register}
+            type="time"
+            />
+            <span className="text-xs text-red-400 min-h-[20px]">
+            {errors.hora_cita_final?.message}
+            </span>
+        </div>
+
+        {/* Servicio */}
+        <div className="flex flex-col justify-end h-full">
+            <AutocompleteSelect
+            name="servicioSelect"
+            label="Servicio"
+            options={serviceOptions}
+            value={serviceOptions.find((o) => o.value === selectedServiceId) || null}
+            onChange={(opt) => setSelectedServiceId(opt ? String(opt.value) : "")}
+            />
+            <span className="min-h-[20px]"></span>
+        </div>
+
+        {/* Cantidad */}
+        <div className="flex flex-col justify-end h-full">
+            <label className="text-xs text-gray-500">Cantidad</label>
+            <input
+            type="number"
+            value={selectedQuantity}
+            onChange={(e) => setSelectedQuantity(e.target.value)}
+            min={1}
+            className="mt-1 w-full border rounded p-2 text-sm"
+            />
+            <span className="min-h-[20px]"></span>
+        </div>
+
+        <div className="flex flex-col h-full">
+
+      <label className="text-xs invisible select-none">Botón</label>
+
+      <div className="mt-4">
+        <button
+          type="button"
+          onClick={handleAddService}
+          disabled={!selectedServiceId}
+          className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded text-sm text-white ${
+            selectedServiceId ? "bg-backbuttondefault" : "bg-gray-400"
+          }`}
+        >
+          <Plus size={17} color="white" /> Agregar
+        </button>
+      </div>
+
+      <span className="text-xs text-transparent min-h-[20px] select-none">.</span>
+      </div>
+      </div>
+
+        {patientHasDebt && (
+            <p className="text-red-500 text-sm mt-1">El paciente tiene deudas pendientes de pago</p>
+        )}
+      
+        {servicesDataForTable.length > 0 && (
+            <div>
+              <h3 className="text-xs text-gray-500 mt-1">Servicios seleccionados:</h3>
+              <div className="border border-gray-300 rounded-md p-2 mt-1">
+                <Table columns={serviceColumns} data={servicesDataForTable} renderRow={renderServiceRow} />
+              </div>
+            </div>
+          )}
+      
+        {/* Observaciones */}
+        <div className="flex flex-col gap-2 w-full">
+          <InputField
+          label="Observaciones"
+          name="observaciones"
+          defaultValue={data?.observaciones || ""}
+          register={register}
+          error={errors.observaciones}
+          />
+          {errors.observaciones && (
+            <p className="text-xs text-red-400 min-h-[20px]">
+              {errors.observaciones.message?.toString()}
+            </p>
+          )}
+        </div>
+      
+        {/* Estado */}
+        <div className="flex flex-col gap-2 w-full md:w-1/2">
+          <label className="text-xs text-gray-500">Estado</label>
+          <select
+            {...register("estado")}
+            defaultValue={data?.estado}
+            className="mt-1 w-full border rounded p-2 text-sm"
+          >
+            <option value="AGENDADO">Agendado</option>
+            <option value="COMPLETADO">Completado</option>
+            <option value="EN_PROCESO">En proceso</option>
+            <option value="FINALIZADO">Finalizado</option>
+            <option value="CANCELADO">Cancelado</option>
+          </select>
+          {errors.estado && (
+            <p className="text-xs text-red-400">
+              {errors.estado.message?.toString()}
+            </p>
+          )}
+          {type === "update" && data?.deuda_restante === 0 && (
+            <p className="text-green-600 font-bold text-sm mt-1">
+              La cita ha sido paga
+            </p>
+          )}
+        </div>
+      
+        {state.error && <span className="text-red-400">Algo pasó mal</span>}
+      
+        <button
+          type="submit"
+          className="bg-backbuttondefault hover:bg-backbuttonhover text-white p-2 rounded-md"
+        >
+          {type === "create" ? "Crear" : "Actualizar"}
+        </button>
+      </form>
+      
     );
 };
 

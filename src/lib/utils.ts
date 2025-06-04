@@ -37,3 +37,7 @@ export const hasErrorInput = [
   // ring color
   "ring-red-200 dark:ring-red-700/30",
 ]
+
+export function cn(...inputs: (string | undefined | null | false)[]) {
+  return inputs.filter(Boolean).join(" ");
+}

@@ -48,7 +48,20 @@ export const appointmentSchema = z.object({
         ["AGENDADO", "COMPLETADO", "EN_PROCESO", "FINALIZADO", "CANCELADO"],
         { message: "Estado requerido" }
     ),
-    cantidad: z.coerce.number().min(1, { message: "La tarifa debe ser al menos 1" }),
+    
+    id_especialidad: z.preprocess(
+        (val) => {
+          if (val === "" || val == null) return undefined;
+          return Number(val);
+        },
+        z.number().min(1, { message: "Especialidad requerida" }).optional()
+      ).refine((val) => val !== undefined, { message: "Especialidad requerida" }),
+
+    observaciones: z
+        .string()
+        .max(1000, { message: 'Observaciones demasiado largas' })
+        .optional()
+        .nullable(),
 });
 
 export type AppointmentSchema = z.infer<typeof appointmentSchema>;

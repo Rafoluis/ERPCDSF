@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { Dispatch, JSX, SetStateAction, useActionState, useEffect, useState } from "react";
+import { Dispatch, JSX, SetStateAction, useActionState, useEffect, useRef, useState } from "react";
 import AppointmentForm from "@/components/forms/appointmentForm";
 import PatientForm from "./forms/patientForms";
 import TicketForm from "./forms/ticketForm";
@@ -17,6 +17,7 @@ import { showToast } from "@/lib/toast";
 import { FormContainerProps } from "./formContainer";
 import { Eye, Pencil, Plus, Trash2, UserRoundPlus } from "lucide-react";
 import TableAction from "@/components/table/TableAction";
+import ConfirmCloseModal from "./ConfirmCloseModal"; 
 
 interface ExtendedFormModalProps extends FormContainerProps {
     relatedData?: any;
@@ -59,115 +60,123 @@ const deleteActions: Record<string, any> = {
 };
 
 export default function FormModal({
-    table,
-    type,
-    data,
-    id,
-    relatedData,
-    onSuccess,
-    variant = "default",
+  table,
+  type,
+  data,
+  id,
+  relatedData,
+  onSuccess,
+  variant = "default",
 }: ExtendedFormModalProps) {
-    const isAppointmentPatient = table === "paciente" && type === "create" && variant === "appointment";
-    const router = useRouter();
-    const [open, setOpen] = useState(false);
+  const isAppointmentPatient = table === "paciente" && type === "create" && variant === "appointment";
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
-    function Form() {
-        const [state, formAction] = useActionState(deleteActions[table], { success: false, error: null });
+  const handleOpen = () => setOpen(true);
+  const handleRequestClose = () => setShowConfirm(true);
+  const handleConfirmClose = () => {
+    setShowConfirm(false);
+    setOpen(false);
+  };
+  const handleCancelClose = () => setShowConfirm(false);
 
-        useEffect(() => {
-            if (state.success) {
-                showToast("success", `La ${table} ha sido eliminada`);
-                setOpen(false);
-                router.refresh();
-            }
-        }, [state.success, router, table]);
+  const wideWidth = "w-full max-w-screen-sm sm:max-w-screen-md md:max-w-screen-lg lg:max-w-screen-xl xl:max-w-5xl";
+  const defaultWidth = "w-[80%] md:w-[60%] lg:w-[50%] xl:w-[40%] 2xl:w-[35%]";
+  const widthClasses = table === "cita" || table === "boleta" ? wideWidth : defaultWidth;
 
-        if (type === "delete" && id) {
-            return (
-                <form action={formAction} className="p-4 flex flex-col gap-4">
-                    <input type="hidden" name="id" value={id} />
-                    <span className="text-center font-medium">¿Está seguro de eliminar esta {table}?</span>
-                    <button className="bg-red-700 text-white py-2 px-4 rounded-md w-max self-center">Eliminar</button>
-                </form>
-            );
-        }
+  const isCreate = type === "create";
+  const isUpdate = type === "update";
+  const isDelete = type === "delete";
 
-        if (type === "create" || type === "update") {
-            return forms[table](setOpen, type, data, relatedData, onSuccess);
-        }
+  const formRef = useRef(
+    type === "delete" && id ? (
+      <DeleteForm table={table} id={String(id)} setOpen={setOpen} />
+    ) : (
+      forms[table](setOpen, type as any, data, relatedData, onSuccess)
+    )
+  );
 
-        return <span>Formulario no encontrado</span>;
-    }
-
-    if (type === "create") {
-        return (
+  return (
+    <>
+      {isCreate && (
+        <button
+          type="button"
+          className={`${
+            isAppointmentPatient
+              ? "w-full px-4 py-2 rounded-md bg-backbuttondefault hover:bg-backbuttonhover"
+              : "w-auto px-4 py-2 rounded-full bg-backbuttondefault hover:bg-backbuttonhover"
+          } flex items-center justify-center`}
+          onClick={handleOpen}
+        >
+          {isAppointmentPatient ? (
+            <UserRoundPlus size={20} color="white" />
+          ) : (
             <>
-                <button
-                    type="button"
-                    className={`${isAppointmentPatient ? "w-full px-4 py-2 rounded-md bg-backbuttondefault" : "w-auto px-4 py-2 rounded-full bg-backbuttondefault"
-                        } flex items-center justify-center`}
-                    onClick={() => setOpen(true)}
-                >
-                    {isAppointmentPatient ? (
-                        <UserRoundPlus size={20} color="white" />
-                    ) : (
-                        <>
-                            <Plus size={20} color="white" />
-                            <span className="ml-2 text-sm font-medium text-textdefault">Agregar</span>
-                        </>
-                    )}
-                </button>
-                {open && renderModal()}
+              <Plus size={20} color="white" />
+              <span className="ml-2 text-sm font-medium text-textdefault">Agregar</span>
             </>
-        );
+          )}
+        </button>
+      )}
+
+      {!isCreate && isUpdate && (
+        <TableAction
+          icon={<Pencil />}
+          onClick={handleOpen}
+          className="shadow-sm hover:shadow-md bg-cyan-100 hover:bg-cyan-200"
+          iconColor="text-black"
+          hoverIconColor="text-black"
+          iconSize="w-4 h-4"
+        />
+      )}
+      {!isCreate && isDelete && (
+        <TableAction
+          icon={<Trash2 />}
+          onClick={handleOpen}
+          className="shadow-sm hover:shadow-md bg-red-100 hover:bg-red-200"
+          iconColor="text-black"
+          hoverIconColor="text-black"
+          iconSize="w-4 h-4"
+        />
+      )}
+
+      {open && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-40 flex items-center justify-center">
+          <div
+            className={`bg-white p-6 rounded-md relative ${widthClasses} z-50`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {formRef.current}
+            <div className="absolute top-4 right-4 cursor-pointer" onClick={handleRequestClose}>
+              <Image src="/close.png" alt="Cerrar" width={14} height={14} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showConfirm && <ConfirmCloseModal onConfirm={handleConfirmClose} onCancel={handleCancelClose} />}
+    </>
+  );
+}
+
+function DeleteForm({ table, id, setOpen }: { table: string; id: string; setOpen: any }) {
+  const [state, formAction] = useActionState(deleteActions[table], { success: false, error: null });
+  const router = useRouter();
+
+  useEffect(() => {
+    if (state.success) {
+      showToast("success", `La ${table} ha sido eliminada`);
+      setOpen(false);
+      router.refresh();
     }
+  }, [state.success, router, setOpen, table]);
 
-    const isUpdate = type === "update";
-    const isDelete = type === "delete";
-
-    return (
-        <>
-            {isUpdate && (
-                <TableAction
-                    icon={<Pencil />}
-                    onClick={() => setOpen(true)}
-                    className="shadow-sm hover:shadow-md bg-cyan-100 hover:bg-cyan-200"
-                    iconColor="text-black"
-                    hoverIconColor="text-black"
-                    iconSize="w-4 h-4"
-                />
-            )}
-            {isDelete && (
-                <TableAction
-                    icon={<Trash2 />}
-                    onClick={() => setOpen(true)}
-                    className="shadow-sm hover:shadow-md bg-red-100 hover:bg-red-200"
-                    iconColor="text-black"
-                    hoverIconColor="text-black"
-                    iconSize="w-4 h-4"
-                />
-            )}
-            {open && renderModal()}
-        </>
-    );
-
-    function renderModal() {
-        return createPortal(
-            <div
-                className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center"
-                onClick={() => setOpen(false)}
-            >
-                <div
-                    className="bg-white p-6 rounded-md relative w-[80%] md:w-[60%] lg:w-[50%] xl:w-[40%] 2xl:w-[35%]"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <Form />
-                    <div className="absolute top-4 right-4 cursor-pointer" onClick={() => setOpen(false)}>
-                        <Image src="/close.png" alt="Cerrar" width={14} height={14} />
-                    </div>
-                </div>
-            </div>,
-            document.body
-        );
-    }
+  return (
+    <form action={formAction} className="p-4 flex flex-col gap-4">
+      <input type="hidden" name="id" value={id} />
+      <span className="text-center font-medium">¿Está seguro de eliminar esta {table}?</span>
+      <button className="bg-red-700 text-white py-2 px-4 rounded-md w-max self-center">Eliminar</button>
+    </form>
+  );
 }

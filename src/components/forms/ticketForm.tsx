@@ -205,7 +205,7 @@ const TicketForm = ({
     };
 
     return (
-        <form className="flex flex-col gap-8" onSubmit={onSubmit}>
+        <form className="flex flex-col gap-8 p-1 overflow-y-auto max-h-[calc(100vh-4rem)]" onSubmit={onSubmit}>
             <h1 className="text-xl font-semibold">
                 {type === "create" ? "Registrar nueva boleta" : "Actualizar boleta"}
             </h1>

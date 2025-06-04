@@ -46,28 +46,43 @@ model UsuarioRol {
 }
 
 model Paciente {
-  id_paciente      Int               @id @default(autoincrement())
-  id_usuario       Int               @unique
-  fecha_nacimiento DateTime
-  citas            Cita[]
-  tickets          Ticket[]
-  historiaClinica  Historia_Clinica?
-  fecha_creacion   DateTime          @default(now())
-  deletedAt        DateTime?
+  id_paciente            Int               @id @default(autoincrement())
+  id_usuario             Int               @unique
+  fecha_nacimiento       DateTime
+  lugar_fecha_nacimiento String?
+  direccion              String?
+  procedencia            String?
+  ocupacion              String?
+  viajes                 String?
+  telefono               String?
+  emergencia             String?
+  edad                   String?
+  sexo                   Sexo?
+  estado_civil           String?
+  grado_instruccion      String?
+  religion               String?
+  citas                  Cita[]
+  tickets                Ticket[]
+  historiaClinica        Historia_Clinica?
+  fecha_creacion         DateTime          @default(now())
+  deletedAt              DateTime?
 
   usuario Usuario @relation(fields: [id_usuario], references: [id_usuario])
 }
 
 model Empleado {
-  id_empleado    Int       @id @default(autoincrement())
-  id_usuario     Int       @unique
-  especialidad   String
-  citas          Cita[]
-  fecha_creacion DateTime  @default(now())
-  deletedAt      DateTime?
+  id_empleado     Int       @id @default(autoincrement())
+  id_usuario      Int       @unique
+  id_especialidad Int?
+  citas           Cita[]
+  fecha_creacion  DateTime  @default(now())
+  deletedAt       DateTime?
 
   usuario              Usuario          @relation(fields: [id_usuario], references: [id_usuario])
+  especialidad         Especialidad?    @relation(fields: [id_especialidad], references: [id_especialidad])
   asignacionesHistoria DoctorAsignado[]
+
+  @@index([id_especialidad])
 }
 
 model Servicio {
@@ -94,18 +109,29 @@ model Cita {
   id_cita           Int            @id @default(autoincrement())
   id_paciente       Int
   id_empleado       Int
+  id_especialidad   Int?
   fecha_cita        DateTime
   hora_cita_inicial DateTime?
   hora_cita_final   DateTime?
   monto_pagado      Float          @default(0)
   deuda_restante    Float          @default(0)
+  observaciones     String?
   estado            EstadoCita
   servicios         ServicioCita[]
   ticketCitas       TicketCita[]
   deletedAt         DateTime?
 
-  paciente Paciente @relation(fields: [id_paciente], references: [id_paciente])
-  empleado Empleado @relation(fields: [id_empleado], references: [id_empleado])
+  paciente     Paciente      @relation(fields: [id_paciente], references: [id_paciente])
+  empleado     Empleado      @relation(fields: [id_empleado], references: [id_empleado])
+  especialidad Especialidad? @relation(fields: [id_especialidad], references: [id_especialidad])
+}
+
+model Especialidad {
+  id_especialidad Int        @id @default(autoincrement())
+  nombre          String     @unique
+  citas           Cita[]
+  empleados       Empleado[]
+  deletedAt       DateTime?
 }
 
 model Ticket {
@@ -154,11 +180,81 @@ model Historia_Clinica {
   fecha_ultima_consulta DateTime?
   estado_tratamiento    String?
   fecha_alta            DateTime?
-  antecedentes          String?
-  tratamientos          String?
-  medicamentos          String?
-  observaciones         String?
-  deletedAt             DateTime?
+
+  // Campos clínicos
+  hc                      String?
+  fecha                   String?
+  hora                    String?
+  motivo_consulta         String?
+  enfermedad_actual       String?
+  tiempo_enfermedad       String?
+  signos_sintomas         String?
+  relato_cronologico      String?
+  funciones_biologicas    String?
+  antecedentes_familiares String?
+  antecedentes_personales String?
+  signos_pa               String?
+  pulso                   String?
+  temp                    String?
+  fc                      String?
+  f_resp                  String?
+  examen_ocl              String?
+  cie10_presuntivo        String?
+  cie10_definitivo        String?
+  plan_tratamiento        String?
+  pronostico              String?
+  recomendaciones         String?
+  control_evolucion       String?
+  alta_paciente           String?
+  profesional_nombre      String?
+  nombre_apoderado        String?
+  dni_apoderado           String?
+  cel_apoderado           String?
+  correo_apoderado        String?
+
+  // Antecedentes generales (booleanos y texto)
+  antecedente_ram                   Boolean?
+  antecedente_lidocaina             Boolean?
+  antecedente_tabaco                Boolean?
+  antecedente_alcohol               Boolean?
+  antecedente_otros_generales       String?
+  sed                               String?
+  apetito                           String?
+  deposicion                        String?
+  miccion                           String?
+  antecedente_ar                    Boolean?
+  antecedente_les                   Boolean?
+  antecedente_vih                   Boolean?
+  antecedente_otros_inmunologicos   String?
+  antecedente_hta                   Boolean?
+  antecedente_dm                    Boolean?
+  antecedente_iam                   Boolean?
+  antecedente_anemia                Boolean?
+  antecedente_asma                  Boolean?
+  antecedente_tbc                   Boolean?
+  antecedente_otros_patologicos     String?
+  antecedente_familiar_hta          Boolean?
+  antecedente_familiar_dm           Boolean?
+  antecedente_familiar_iam          Boolean?
+  antecedente_familiar_anemia       Boolean?
+  antecedente_familiar_asma         Boolean?
+  antecedente_familiar_tbc          Boolean?
+  antecedente_otros_familiares      String?
+  antecedente_dengue                Boolean?
+  antecedente_fiebre_amarilla       Boolean?
+  antecedente_its                   Boolean?
+  antecedente_otros_epidemiologicos String?
+  antecedente_stress                Boolean?
+  antecedente_trauma_acustico       Boolean?
+  antecedente_mercurialismo         Boolean?
+  antecedente_otros_ocupacionales   String?
+  antecedente_farmacologicos        String?
+  especificacion_antecedentes       String?
+  examen_extraoral                  String?
+  examen_intraoral                  String?
+
+  observaciones String?
+  deletedAt     DateTime?
 
   paciente     Paciente         @relation(fields: [id_paciente], references: [id_paciente])
   asignaciones DoctorAsignado[]

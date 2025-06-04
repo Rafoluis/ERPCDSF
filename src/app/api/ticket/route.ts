@@ -1,41 +1,41 @@
-import { NextRequest } from "next/server";
+// app/api/tickets/route.ts
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function GET(req: NextRequest) {
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get("id");
+export async function GET(request: NextRequest) {
+  const citaIdParam = request.nextUrl.searchParams.get("citaId");
+  if (!citaIdParam) {
+    return NextResponse.json({ error: "citaId no proporcionado" }, { status: 400 });
+  }
+  const citaId = parseInt(citaIdParam, 10);
 
-    if (!id) {
-        return Response.json({ error: "ID no proporcionado" }, { status: 400 });
-    }
-
-    try {
-        const ticket = await prisma.ticket.findUnique({
-            where: { id_ticket: parseInt(id, 10) },
-            include: {
-                paciente: { include: { usuario: true } },
-                pagos: true,
-                ticketCitas: {
-                    include: {
-                        cita: {
-                            include: {
-                                servicios: {
-                                    include: { servicio: true },
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-        });
-
-        if (!ticket) {
-            return Response.json({ error: "Ticket no encontrado" }, { status: 404 });
+  try {
+    const tickets = await prisma.ticket.findMany({
+      where: {
+        ticketCitas: {
+          some: {
+            id_cita: citaId
+          }
         }
+      },
+      include: {
+        paciente: { include: { usuario: true } },
+        pagos: true,
+        ticketCitas: {
+          include: {
+            cita: {
+              include: {
+                servicios: { include: { servicio: true } }
+              }
+            }
+          }
+        }
+      }
+    });
 
-        return Response.json(ticket, { status: 200 });
-    } catch (error) {
-        console.error("Error en el servidor:", error);
-        return Response.json({ error: "Error interno del servidor" }, { status: 500 });
-    }
+    return NextResponse.json(tickets, { status: 200 });
+  } catch (error) {
+    console.error("Error al consultar tickets por citaId:", error);
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+  }
 }

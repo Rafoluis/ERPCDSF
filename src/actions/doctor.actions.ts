@@ -24,7 +24,9 @@ export const createDoctor = async (
     }
     await prisma.empleado.create({
       data: {
-        especialidad: data.especialidad,
+        especialidad: {
+          connect: { nombre: data.especialidad },
+        },    
         usuario: {
           create: {
             nombre: data.nombre,
@@ -75,7 +77,9 @@ export const updateDoctor = async (
         id_empleado: data.id_empleado!,
       },
       data: {
-        especialidad: data.especialidad,
+        especialidad: {
+          connect: { nombre: data.especialidad },
+        },    
         usuario: {
           update: {
             nombre: data.nombre,

@@ -21,93 +21,101 @@ export const fetchRelatedData = async (table: string, type: string, data?: any) 
 };
 
 const fetchCitaData = async (type: string, data?: any) => {
-    const [appointmentPatient, appointmentDoctor, appointmentService] = await Promise.all([
+    const [appointmentPatient, appointmentDoctor, appointmentService, appointmentSpecialties] = await Promise.all([
         prisma.paciente.findMany({
-            where: { deletedAt: null, usuario: { deletedAt: null } },
-            select: {
-                id_paciente: true,
-                usuario: { select: { nombre: true, apellido: true } },
-                citas: {
-                    where: { deletedAt: null },
-                    select: {
-                        id_cita: true,
-                        deuda_restante: true,
-                        servicios: {
-                            select: {
-                                cantidad: true,
-                                servicio: { select: { tarifa: true } },
-                            },
-                        },
-                    },
+          where: { deletedAt: null, usuario: { deletedAt: null } },
+          select: {
+            id_paciente: true,
+            usuario: { select: { nombre: true, apellido: true } },
+            citas: {
+              where: { deletedAt: null },
+              select: {
+                id_cita: true,
+                deuda_restante: true,
+                servicios: {
+                  select: {
+                    cantidad: true,
+                    servicio: { select: { tarifa: true } },
+                  },
                 },
+              },
             },
+          },
         }),
         prisma.empleado.findMany({
-            where: {
-                deletedAt: null,
-                usuario: {
-                    deletedAt: null,
-                    roles: { some: { rol: { nombre: "ODONTOLOGO" } } },
-                },
-            },
-            select: { id_empleado: true, usuario: { select: { nombre: true, apellido: true } } },
+          where: {
+            deletedAt: null,
+            usuario: { deletedAt: null, roles: { some: { rol: { nombre: "ODONTOLOGO" } } } },
+          },
+          select: {
+            id_empleado: true,
+            usuario: { select: { nombre: true, apellido: true } },
+            especialidad: { select: { id_especialidad: true, nombre: true } },
+          },
         }),
         prisma.servicio.findMany({
-            where: { deletedAt: null },
-            select: { id_servicio: true, nombre_servicio: true, tarifa: true },
+          where: { deletedAt: null },
+          select: { id_servicio: true, nombre_servicio: true, tarifa: true },
         }),
-    ]);
+        prisma.especialidad.findMany({                                          
+          where: { deletedAt: null },
+          select: { id_especialidad: true, nombre: true },
+        }),
+      ]);
 
-    let selectedServices: {
-        id_servicio: number;
-        nombre_servicio: string;
-        tarifa: number;
-        cantidad: number;
-    }[] = [];
-
-    if ((type === "update" || type === "view") && data?.id_cita) {
-        const citaWithServices = await prisma.cita.findUnique({
-            where: { id_cita: data.id_cita },
-            include: {
-                servicios: {
-                    include: {
-                        servicio: {
-                            select: { id_servicio: true, nombre_servicio: true, tarifa: true },
-                        },
-                    },
-                },
+      let selectedServices: { id_servicio: number; nombre_servicio: string; tarifa: number; cantidad: number; }[] = [];
+      let selectedSpecialty = null;
+    
+      if ((type === "update" || type === "view") && data?.id_cita) {
+        const citaWithDetails = await prisma.cita.findUnique({
+          where: { id_cita: data.id_cita },
+          select: {
+            servicios: {
+              include: { servicio: { select: { id_servicio: true, nombre_servicio: true, tarifa: true } } }
             },
+            especialidad: { select: { id_especialidad: true, nombre: true } },
+            observaciones: true,
+          },
         });
+    
+        selectedServices = citaWithDetails?.servicios.map(sc => ({
+          id_servicio: sc.servicio.id_servicio,
+          nombre_servicio: sc.servicio.nombre_servicio,
+          tarifa: sc.servicio.tarifa,
+          cantidad: sc.cantidad,
+        })) || [];
+    
+        if (citaWithDetails?.especialidad) {
+            selectedSpecialty = {
+                id_especialidad: citaWithDetails.especialidad.id_especialidad,
+                nombre: citaWithDetails.especialidad.nombre
+            };
+        }
+      }
 
-        selectedServices =
-            citaWithServices?.servicios.map((sc) => ({
-                id_servicio: sc.servicio.id_servicio,
-                nombre_servicio: sc.servicio.nombre_servicio,
-                tarifa: sc.servicio.tarifa,
-                cantidad: sc.cantidad,
-            })) || [];
-    }
-
-    return {
-        pacientes: appointmentPatient.map((p) => ({
-            id_paciente: p.id_paciente,
-            nombre: p.usuario.nombre,
-            apellido: p.usuario.apellido,
-            citas: p.citas,
+      return {
+        pacientes: appointmentPatient.map(p => ({
+          id_paciente: p.id_paciente,
+          nombre: p.usuario.nombre,
+          apellido: p.usuario.apellido,
+          citas: p.citas,
         })),
-        empleados: appointmentDoctor.map((d) => ({
-            id_empleado: d.id_empleado,
-            nombre: d.usuario.nombre,
-            apellido: d.usuario.apellido,
+        empleados: appointmentDoctor.map(d => ({
+          id_empleado: d.id_empleado,
+          nombre: d.usuario.nombre,
+          apellido: d.usuario.apellido,
+          especialidad: d.especialidad ? { id: d.especialidad.id_especialidad, nombre: d.especialidad.nombre } : null,
         })),
-        servicios: appointmentService.map((s) => ({
-            id_servicio: s.id_servicio,
-            nombre_servicio: s.nombre_servicio,
-            tarifa: s.tarifa,
+        servicios: appointmentService.map(s => ({
+          id_servicio: s.id_servicio,
+          nombre_servicio: s.nombre_servicio,
+          tarifa: s.tarifa,
         })),
+        especialidades: appointmentSpecialties.map(e => ({ id_especialidad: e.id_especialidad, nombre: e.nombre })),
         selectedServices,
+        selectedSpecialty,
+      };
     };
-};
 
 const fetchPacienteData = unstable_cache(
     async () => {
